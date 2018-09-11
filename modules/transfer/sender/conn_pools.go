@@ -18,6 +18,8 @@ import (
 	backend "github.com/open-falcon/falcon-plus/common/backend_pool"
 	"github.com/open-falcon/falcon-plus/modules/transfer/g"
 	nset "github.com/toolkits/container/set"
+	"github.com/olivere/elastic"
+	"strings"
 )
 
 func initConnPools() {
@@ -46,6 +48,32 @@ func initConnPools() {
 	GraphConnPools = backend.CreateSafeRpcConnPools(cfg.Graph.MaxConns, cfg.Graph.MaxIdle,
 		cfg.Graph.ConnTimeout, cfg.Graph.CallTimeout, graphInstances.ToSlice())
 
+	// es
+	if cfg.Es.Enabled {
+		urls := strings.Split(cfg.Es.Addresses, ",")
+		options := []elastic.ClientOptionFunc{
+			elastic.SetURL(urls...),
+		}
+
+		if !cfg.Es.IsSniff {
+			options = append(options,
+				elastic.SetSniff(false))
+		}
+
+		if cfg.Es.IsAuth {
+			username := cfg.Es.Username
+			password := cfg.Es.Password
+			options = append(options,
+				elastic.SetBasicAuth(username, password))
+		}
+
+		EsConnPoolHelper = backend.NewEsConnPoolHelper(cfg.Tsdb.Address,
+			cfg.Tsdb.MaxConns,
+			cfg.Tsdb.MaxIdle,
+			cfg.Tsdb.ConnTimeout,
+			cfg.Tsdb.CallTimeout,
+			options)
+	}
 }
 
 func DestroyConnPools() {

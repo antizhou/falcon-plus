@@ -37,6 +37,7 @@ func startSendTasks() {
 	judgeConcurrent := cfg.Judge.MaxConns
 	graphConcurrent := cfg.Graph.MaxConns
 	tsdbConcurrent := cfg.Tsdb.MaxConns
+	esConcurrent := cfg.Es.MaxConns
 
 	if tsdbConcurrent < 1 {
 		tsdbConcurrent = 1
@@ -65,6 +66,10 @@ func startSendTasks() {
 
 	if cfg.Tsdb.Enabled {
 		go forward2TsdbTask(tsdbConcurrent)
+	}
+
+	if cfg.Es.Enabled {
+		go forward2EsTask(esConcurrent)
 	}
 }
 
@@ -196,6 +201,54 @@ func forward2TsdbTask(concurrent int) {
 
 			if err != nil {
 				proc.SendToTsdbFailCnt.IncrBy(int64(len(itemList)))
+				log.Println(err)
+				return
+			}
+		}(items)
+	}
+}
+
+// Tsdb定时任务, 将数据通过api发送到es
+func forward2EsTask(concurrent int) {
+	batch := g.Config().Es.Batch // 一次发送,最多batch条数据
+	retry := g.Config().Es.MaxRetry
+	sema := nsema.NewSemaphore(concurrent)
+
+	for {
+		log.Print("asdfasdfasdf",batch)
+		items := EsQueue.PopBackBy(batch)
+		if len(items) == 0 {
+			time.Sleep(DefaultSendTaskSleepInterval)
+			continue
+		}
+		//  同步Call + 有限并发 进行发送
+		sema.Acquire()
+		go func(itemList []interface{}) {
+			defer sema.Release()
+
+			var esBuffer bytes.Buffer
+			for i := 0; i < len(itemList); i++ {
+				esItem := itemList[i].(*cmodel.EsItem)
+				s := esItem.EsString()
+				if s == "" {
+					continue
+				}
+				esBuffer.WriteString(s)
+				esBuffer.WriteString("\n")
+			}
+
+			var err error
+			for i := 0; i < retry; i++ {
+				err = EsConnPoolHelper.Send(esBuffer.Bytes())
+				if err == nil {
+					proc.SendToEsCnt.IncrBy(int64(len(itemList)))
+					break
+				}
+				time.Sleep(100 * time.Millisecond)
+			}
+
+			if err != nil {
+				proc.SendToEsFailCnt.IncrBy(int64(len(itemList)))
 				log.Println(err)
 				return
 			}

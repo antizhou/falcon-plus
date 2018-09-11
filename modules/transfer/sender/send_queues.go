@@ -36,4 +36,8 @@ func initSendQueues() {
 	if cfg.Tsdb.Enabled {
 		TsdbQueue = nlist.NewSafeListLimited(DefaultSendQueueMaxSize)
 	}
+
+	if cfg.Es.Enabled {
+		EsQueue = nlist.NewSafeListLimited(DefaultSendQueueMaxSize)
+	}
 }

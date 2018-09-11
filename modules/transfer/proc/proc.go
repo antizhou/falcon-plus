@@ -40,19 +40,23 @@ var (
 	SendToJudgeCnt = nproc.NewSCounterQps("SendToJudgeCnt")
 	SendToTsdbCnt  = nproc.NewSCounterQps("SendToTsdbCnt")
 	SendToGraphCnt = nproc.NewSCounterQps("SendToGraphCnt")
+	SendToEsCnt  = nproc.NewSCounterQps("SendToEsCnt")
 
 	SendToJudgeDropCnt = nproc.NewSCounterQps("SendToJudgeDropCnt")
 	SendToTsdbDropCnt  = nproc.NewSCounterQps("SendToTsdbDropCnt")
 	SendToGraphDropCnt = nproc.NewSCounterQps("SendToGraphDropCnt")
+	SendToEsDropCnt  = nproc.NewSCounterQps("SendToEsDropCnt")
 
 	SendToJudgeFailCnt = nproc.NewSCounterQps("SendToJudgeFailCnt")
 	SendToTsdbFailCnt  = nproc.NewSCounterQps("SendToTsdbFailCnt")
 	SendToGraphFailCnt = nproc.NewSCounterQps("SendToGraphFailCnt")
+	SendToEsFailCnt  = nproc.NewSCounterQps("SendToEsFailCnt")
 
 	// 发送缓存大小
 	JudgeQueuesCnt = nproc.NewSCounterBase("JudgeSendCacheCnt")
 	TsdbQueuesCnt  = nproc.NewSCounterBase("TsdbSendCacheCnt")
 	GraphQueuesCnt = nproc.NewSCounterBase("GraphSendCacheCnt")
+	EsQueuesCnt  = nproc.NewSCounterBase("EsQueuesCnt")
 
 	// http请求次数
 	HistoryRequestCnt = nproc.NewSCounterQps("HistoryRequestCnt")
@@ -84,21 +88,25 @@ func GetAll() []interface{} {
 	ret = append(ret, SendToJudgeCnt.Get())
 	ret = append(ret, SendToTsdbCnt.Get())
 	ret = append(ret, SendToGraphCnt.Get())
+	ret = append(ret, SendToEsCnt.Get())
 
 	// drop cnt
 	ret = append(ret, SendToJudgeDropCnt.Get())
 	ret = append(ret, SendToTsdbDropCnt.Get())
 	ret = append(ret, SendToGraphDropCnt.Get())
+	ret = append(ret, SendToEsDropCnt.Get())
 
 	// send fail cnt
 	ret = append(ret, SendToJudgeFailCnt.Get())
 	ret = append(ret, SendToTsdbFailCnt.Get())
 	ret = append(ret, SendToGraphFailCnt.Get())
+	ret = append(ret, SendToEsFailCnt.Get())
 
 	// cache cnt
 	ret = append(ret, JudgeQueuesCnt.Get())
 	ret = append(ret, TsdbQueuesCnt.Get())
 	ret = append(ret, GraphQueuesCnt.Get())
+	ret = append(ret, EsQueuesCnt.Get())
 
 	// http request
 	ret = append(ret, HistoryRequestCnt.Get())
