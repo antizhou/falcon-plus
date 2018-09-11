@@ -67,7 +67,7 @@ func initConnPools() {
 				elastic.SetBasicAuth(username, password))
 		}
 
-		EsConnPoolHelper = backend.NewEsConnPoolHelper(cfg.Tsdb.Address,
+		EsConnPoolHelper = backend.NewEsConnPoolHelper(cfg.Es.Addresses,
 			cfg.Tsdb.MaxConns,
 			cfg.Tsdb.MaxIdle,
 			cfg.Tsdb.ConnTimeout,

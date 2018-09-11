@@ -21,6 +21,8 @@ import (
 	connp "github.com/toolkits/conn_pool"
 	"github.com/olivere/elastic"
 	"context"
+	"strings"
+	"log"
 )
 
 type EsClient struct {
@@ -86,11 +88,20 @@ func (t *EsConnPoolHelper) Send(data []byte) (err error) {
 
 	done := make(chan error, 1)
 	go func() {
-		_, err := cli.Index().
-			Index("monitor-metric-" + time.Now().Format("20060102")).
-			Type("m").
-			BodyString(string(data)).
-			Do(context.TODO())
+		bulkRequest := cli.Bulk()
+
+		index := "monitor-metric-" + time.Now().Format("20060102")
+		eType := "m"
+
+		for _, v := range strings.Split(string(data), "\n") {
+			indexReq := elastic.NewBulkIndexRequest().Index(index).Type(eType).Doc(v)
+			bulkRequest = bulkRequest.Add(indexReq)
+		}
+
+		_, err := bulkRequest.Do(context.TODO())
+		if err == nil {
+			log.Print("tranfer to es success")
+		}
 		done <- err
 	}()
 

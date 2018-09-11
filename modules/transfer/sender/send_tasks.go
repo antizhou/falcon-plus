@@ -215,7 +215,6 @@ func forward2EsTask(concurrent int) {
 	sema := nsema.NewSemaphore(concurrent)
 
 	for {
-		log.Print("asdfasdfasdf",batch)
 		items := EsQueue.PopBackBy(batch)
 		if len(items) == 0 {
 			time.Sleep(DefaultSendTaskSleepInterval)

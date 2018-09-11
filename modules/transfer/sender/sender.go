@@ -218,7 +218,7 @@ func alignTs(ts int64, period int64) int64 {
 func Push2EsSendQueue(items []*cmodel.MetaData) {
 	for _, item := range items {
 		tsdbItem := convert2EsdbItem(item)
-		isSuccess := TsdbQueue.PushFront(tsdbItem)
+		isSuccess := EsQueue.PushFront(tsdbItem)
 
 		if !isSuccess {
 			proc.SendToEsDropCnt.Incr()
