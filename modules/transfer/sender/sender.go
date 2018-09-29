@@ -20,7 +20,7 @@ import (
 	cmodel "github.com/open-falcon/falcon-plus/common/model"
 	"github.com/open-falcon/falcon-plus/modules/transfer/g"
 	"github.com/open-falcon/falcon-plus/modules/transfer/proc"
-	rings "github.com/toolkits/consistent/rings"
+	"github.com/toolkits/consistent/rings"
 	nlist "github.com/toolkits/container/list"
 	"log"
 )
@@ -47,6 +47,7 @@ var (
 	TsdbQueue   *nlist.SafeListLimited
 	JudgeQueues = make(map[string]*nlist.SafeListLimited)
 	GraphQueues = make(map[string]*nlist.SafeListLimited)
+	EsQueue     *nlist.SafeListLimited
 )
 
 // 连接池
@@ -55,6 +56,7 @@ var (
 	JudgeConnPools     *backend.SafeRpcConnPools
 	TsdbConnPoolHelper *backend.TsdbConnPoolHelper
 	GraphConnPools     *backend.SafeRpcConnPools
+	EsConnPoolHelper   *backend.EsConnPoolHelper
 )
 
 // 初始化数据发送服务, 在main函数中调用
@@ -211,4 +213,31 @@ func convert2TsdbItem(d *cmodel.MetaData) *cmodel.TsdbItem {
 
 func alignTs(ts int64, period int64) int64 {
 	return ts - ts%period
+}
+
+func Push2EsSendQueue(items []*cmodel.MetaData) {
+	for _, item := range items {
+		tsdbItem := convert2EsdbItem(item)
+		isSuccess := EsQueue.PushFront(tsdbItem)
+
+		if !isSuccess {
+			proc.SendToEsDropCnt.Incr()
+		}
+	}
+}
+
+// 转化为es格式
+func convert2EsdbItem(d *cmodel.MetaData) *cmodel.EsItem {
+	t := cmodel.EsItem{}
+
+	var tags = ""
+	for k, v := range d.Tags {
+		tags += k + "=" + v + " "
+	}
+	t.Metric = d.Metric
+	t.Tags = tags
+	t.Value = d.Value
+	t.Timestamp = d.Timestamp
+	t.Endpoint = d.Endpoint
+	return &t
 }

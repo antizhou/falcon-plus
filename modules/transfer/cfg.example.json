@@ -47,5 +47,19 @@
         "maxIdle": 32,
         "retry": 3,
         "address": "127.0.0.1:8088"
+    },
+    "es": {
+        "enabled": true,
+        "batch": 200,
+        "connTimeout": 1000,
+        "callTimeout": 5000,
+        "maxConns": 32,
+        "maxIdle": 32,
+        "retry": 3,
+        "addresses": "http://127.0.0.1:9200",
+        "isAuth": true,
+        "username": "elastic",
+        "password": "elastic",
+        "isSniff": true
     }
 }
