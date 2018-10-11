@@ -25,17 +25,17 @@ type Job struct {
 	w *WorkerGroup
 }
 
-// ManagerJob to manage jobs
-var ManagerJob map[string]*Job //管理job,文件路径为key
-// ManagerJobLock is a global lock
-var ManagerJobLock *sync.RWMutex
+// JobManager to manage jobs
+var JobManager map[string]*Job //管理job,文件路径为key
+// JobManagerLock is a global lock
+var JobManagerLock *sync.RWMutex
 
 // ManagerConfig to manage configs
 var ManagerConfig map[int64]*ConfigInfo
 
 func init() {
-	ManagerJob = make(map[string]*Job)
-	ManagerJobLock = new(sync.RWMutex)
+	JobManager = make(map[string]*Job)
+	JobManagerLock = new(sync.RWMutex)
 	ManagerConfig = make(map[int64]*ConfigInfo)
 }
 
@@ -44,7 +44,7 @@ func UpdateStrategiesLoop() {
 	for {
 		strategy.Update()
 		strategyMap := strategy.GetAll() //最新策略
-		ManagerJobLock.Lock()
+		JobManagerLock.Lock()
 
 		for id, st := range strategyMap {
 			config := &ConfigInfo{
@@ -66,7 +66,7 @@ func UpdateStrategiesLoop() {
 				deleteJob(config)
 			}
 		}
-		ManagerJobLock.Unlock()
+		JobManagerLock.Unlock()
 
 		//更新counter
 		GlobalCount.UpdateByStrategy(strategyMap)
@@ -76,9 +76,9 @@ func UpdateStrategiesLoop() {
 
 // GetOldestTms to analysis the oldes tms
 func GetOldestTms(filepath string) (int64, bool) {
-	ManagerJobLock.RLock()
-	defer ManagerJobLock.RUnlock()
-	job, ok := ManagerJob[filepath]
+	JobManagerLock.RLock()
+	defer JobManagerLock.RUnlock()
+	job, ok := JobManager[filepath]
 	if !ok {
 		return 0, false
 	}
@@ -95,7 +95,7 @@ func GetOldestTms(filepath string) (int64, bool) {
 
 //添加任务到管理map( managerjob managerconfig) 启动reader和worker
 func createJob(config *ConfigInfo, cache chan string, st *scheme.Strategy) error {
-	if _, ok := ManagerJob[config.FilePath]; ok {
+	if _, ok := JobManager[config.FilePath]; ok {
 		if _, ok := ManagerConfig[config.ID]; !ok {
 			ManagerConfig[config.ID] = config
 		}
@@ -111,7 +111,7 @@ func createJob(config *ConfigInfo, cache chan string, st *scheme.Strategy) error
 	dlog.Infof("Add Reader : [%s]", config.FilePath)
 	//启动worker
 	w := NewWorkerGroup(config.FilePath, cache, st)
-	ManagerJob[config.FilePath] = &Job{
+	JobManager[config.FilePath] = &Job{
 		r: r,
 		w: w,
 	}
@@ -134,10 +134,10 @@ func deleteJob(config *ConfigInfo) {
 	}
 	if tag <= 1 {
 		dlog.Infof("Del Reader : [%s]", config.FilePath)
-		if job, ok := ManagerJob[config.FilePath]; ok {
+		if job, ok := JobManager[config.FilePath]; ok {
 			job.w.Stop() //先stop worker
 			job.r.Stop()
-			delete(ManagerJob, config.FilePath)
+			delete(JobManager, config.FilePath)
 		}
 	}
 	dlog.Infof("Stop reader & worker success [filePath:%s][sid:%d]", config.FilePath, config.ID)

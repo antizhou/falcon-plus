@@ -70,7 +70,7 @@ func init() {
 // 提供给Worker用来Push计算后的信息
 // 需保证线程安全
 func PushToCount(Point *AnalysPoint) error {
-	stCount, err := GlobalCount.GetStrategyCountByID(Point.StrategyID)
+	stCounter, err := GlobalCount.GetStrategyCounterByID(Point.StrategyID)
 
 	// 更新strategyCounts
 	if err != nil {
@@ -80,9 +80,9 @@ func PushToCount(Point *AnalysPoint) error {
 			return err
 		}
 
-		GlobalCount.AddStrategyCount(strategy)
+		GlobalCount.AddStrategyCounter(strategy)
 
-		stCount, err = GlobalCount.GetStrategyCountByID(Point.StrategyID)
+		stCounter, err = GlobalCount.GetStrategyCounterByID(Point.StrategyID)
 		// 还拿不到，就出错返回吧
 		if err != nil {
 			dlog.Errorf("Get strategyCount Failed after addition: %v", err)
@@ -91,16 +91,16 @@ func PushToCount(Point *AnalysPoint) error {
 	}
 
 	// 拿到stCount，更新StepCounts
-	stepTms := AlignStepTms(stCount.Strategy.Interval, Point.Tms)
-	tmsCount, err := stCount.GetByTms(stepTms)
+	stepTms := AlignStepTms(stCounter.Strategy.Interval, Point.Tms)
+	tmsCount, err := stCounter.GetByTms(stepTms)
 	if err != nil {
-		err := stCount.AddTms(stepTms)
+		err := stCounter.AddTms(stepTms)
 		if err != nil {
 			dlog.Errorf("Add tms to strategy error: %v", err)
 			return err
 		}
 
-		tmsCount, err = stCount.GetByTms(stepTms)
+		tmsCount, err = stCounter.GetByTms(stepTms)
 		// 还拿不到，就出错返回吧
 		if err != nil {
 			dlog.Errorf("Get tmsCount Failed By Twice Add: %v", err)
@@ -224,8 +224,8 @@ func addFloat64(val *float64, delta float64) (new float64) {
 	return
 }
 
-// GetTmsList to get tmslist cached
-func (sc *StrategyCounter) GetTmsList() []int64 {
+// GetTimestamps to get tmslist cached
+func (sc *StrategyCounter) GetTimestamps() []int64 {
 	tmsList := []int64{}
 	sc.RLock()
 	for tms := range sc.TmsPoints {
@@ -304,20 +304,20 @@ func (gc *GlobalCounter) UpdateByStrategy(globalStras map[int64]*scheme.Strategy
 	dlog.Infof("Update global count done, [del:%d][update:%d]", delCount, upCount)
 }
 
-// AddStrategyCount to add strategy to counter
-func (gc *GlobalCounter) AddStrategyCount(st *scheme.Strategy) {
+// AddStrategyCounter to add strategy to counter
+func (gc *GlobalCounter) AddStrategyCounter(st *scheme.Strategy) {
 	gc.Lock()
 	if _, ok := gc.StrategyCounts[st.ID]; !ok {
-		tmp := new(StrategyCounter)
-		tmp.Strategy = st
-		tmp.TmsPoints = make(map[int64]*PointsCounter, 0)
-		gc.StrategyCounts[st.ID] = tmp
+		strategyCounter := new(StrategyCounter)
+		strategyCounter.Strategy = st
+		strategyCounter.TmsPoints = make(map[int64]*PointsCounter, 0)
+		gc.StrategyCounts[st.ID] = strategyCounter
 	}
 	gc.Unlock()
 }
 
-// GetStrategyCountByID get count by strategy id
-func (gc *GlobalCounter) GetStrategyCountByID(id int64) (*StrategyCounter, error) {
+// GetStrategyCounterByID get count by strategy id
+func (gc *GlobalCounter) GetStrategyCounterByID(id int64) (*StrategyCounter, error) {
 	gc.RLock()
 	stCount, ok := gc.StrategyCounts[id]
 	if !ok {

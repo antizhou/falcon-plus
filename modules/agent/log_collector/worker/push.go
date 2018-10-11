@@ -82,26 +82,26 @@ func PosterLoop() {
 func PusherLoop() {
 	dlog.Info("PushLoop Start")
 	for {
-		gIds := GlobalCount.GetIDs()
-		for _, id := range gIds {
-			stCount, err := GlobalCount.GetStrategyCountByID(id)
-			step := stCount.Strategy.Interval
+		strategiesIds := GlobalCount.GetIDs()
+		for _, id := range strategiesIds {
+			stCounter, err := GlobalCount.GetStrategyCounterByID(id)
+			step := stCounter.Strategy.Interval
 
-			filePath := stCount.Strategy.FilePath
+			filePath := stCounter.Strategy.FilePath
 			if err != nil {
-				dlog.Errorf("get strategy count by id error : %v", err)
+				dlog.Errorf("get strategy counter by id error : %v", err)
 				continue
 			}
-			tmsList := stCount.GetTmsList()
-			for _, tms := range tmsList {
+			timestamps := stCounter.GetTimestamps()
+			for _, tms := range timestamps {
 				if tmsNeedPush(tms, filePath, step) {
-					pointsCount, err := stCount.GetByTms(tms)
+					pointsCount, err := stCounter.GetByTms(tms)
 					if err == nil {
-						ToPushQueue(stCount.Strategy, tms, pointsCount.TagstringMap)
+						ToPushQueue(stCounter.Strategy, tms, pointsCount.TagstringMap)
 					} else {
 						dlog.Errorf("get by tms [%d] error : %v", tms, err)
 					}
-					stCount.DeleteTms(tms)
+					stCounter.DeleteTms(tms)
 				}
 			}
 		}
