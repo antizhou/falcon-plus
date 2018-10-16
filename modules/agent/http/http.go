@@ -40,6 +40,7 @@ func init() {
 	configPushRoutes()
 	configRunRoutes()
 	configSystemRoutes()
+	configLogCollector()
 }
 
 func RenderJson(w http.ResponseWriter, v interface{}) {

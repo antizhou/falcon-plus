@@ -66,10 +66,10 @@ func init() {
 	GlobalCount.StrategyCounts = make(map[int64]*StrategyCounter)
 }
 
-// PushToCount to push to count module
+// PushToCounter to push to count module
 // 提供给Worker用来Push计算后的信息
 // 需保证线程安全
-func PushToCount(Point *AnalysPoint) error {
+func PushToCounter(Point *AnalysPoint) error {
 	stCounter, err := GlobalCount.GetStrategyCounterByID(Point.StrategyID)
 
 	// 更新strategyCounts
@@ -92,7 +92,7 @@ func PushToCount(Point *AnalysPoint) error {
 
 	// 拿到stCount，更新StepCounts
 	stepTms := AlignStepTms(stCounter.Strategy.Interval, Point.Tms)
-	tmsCount, err := stCounter.GetByTms(stepTms)
+	pointsCounter, err := stCounter.GetPointsCounter(stepTms)
 	if err != nil {
 		err := stCounter.AddTms(stepTms)
 		if err != nil {
@@ -100,17 +100,17 @@ func PushToCount(Point *AnalysPoint) error {
 			return err
 		}
 
-		tmsCount, err = stCounter.GetByTms(stepTms)
+		pointsCounter, err = stCounter.GetPointsCounter(stepTms)
 		// 还拿不到，就出错返回吧
 		if err != nil {
-			dlog.Errorf("Get tmsCount Failed By Twice Add: %v", err)
+			dlog.Errorf("Get pointsCounter Failed By Twice Add: %v", err)
 			return err
 		}
 	}
 
 	//拿到tmsCount, 更新TagstringMap
 	tagstring := utils.SortedTags(Point.Tags)
-	return tmsCount.Update(tagstring, Point.Value)
+	return pointsCounter.Update(tagstring, Point.Value)
 }
 
 // AlignStepTms to align the step
@@ -242,8 +242,8 @@ func (sc *StrategyCounter) DeleteTms(tms int64) {
 	sc.Unlock()
 }
 
-// GetByTms get cached counter by tms
-func (sc *StrategyCounter) GetByTms(tms int64) (*PointsCounter, error) {
+// GetPointsCounter get cached counter by tms
+func (sc *StrategyCounter) GetPointsCounter(tms int64) (*PointsCounter, error) {
 	sc.RLock()
 	psCount, ok := sc.TmsPoints[tms]
 	if !ok {
@@ -274,7 +274,7 @@ func (gc *GlobalCounter) UpdateByStrategy(globalStras map[int64]*scheme.Strategy
 	var delCount, upCount int
 	// 先以count的ID为准，更新count
 	// 若ID没有了, 那就删掉
-	for _, id := range gc.GetIDs() {
+	for _, id := range gc.GetStrategyIDs() {
 		gc.RLock()
 		sCount, ok := gc.StrategyCounts[id]
 		gc.RUnlock()
@@ -328,8 +328,8 @@ func (gc *GlobalCounter) GetStrategyCounterByID(id int64) (*StrategyCounter, err
 	return stCount, nil
 }
 
-// GetIDs get ids from counter
-func (gc *GlobalCounter) GetIDs() []int64 {
+// GetStrategyIDs get ids from counter
+func (gc *GlobalCounter) GetStrategyIDs() []int64 {
 	gc.RLock()
 	rList := make([]int64, 0)
 	for k := range gc.StrategyCounts {

@@ -17,7 +17,7 @@ func TestCreatejobAndDeletejob(t *testing.T) {
 		time.Sleep(2 * time.Second)
 		deleteJob(config)
 	}()
-	if err := createJob(config, cache); err == nil {
+	if err := createJob(config, cache, nil); err == nil {
 		for line := range cache {
 			fmt.Println(line)
 		}

@@ -26,6 +26,12 @@ import (
 	"time"
 )
 
+var App string
+
+func InitApp() {
+	App = getApp()
+}
+
 var Root string
 
 func InitRootDir() {

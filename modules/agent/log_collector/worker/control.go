@@ -4,13 +4,14 @@ import (
 	"sync"
 
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/dlog"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/g"
+	"github.com/open-falcon/falcon-plus/modules/agent/g"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/scheme"
 
 	"time"
 
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/reader"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/strategy"
+	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/utils"
 )
 
 // ConfigInfo to control config
@@ -51,7 +52,7 @@ func UpdateStrategiesLoop() {
 				ID:       id,
 				FilePath: st.FilePath,
 			}
-			cache := make(chan string, g.Conf().Worker.QueueSize)
+			cache := make(chan string, g.Config().Worker.QueueSize)
 			if err := createJob(config, cache, st); err != nil {
 				dlog.Errorf("create job fail [id:%d][filePath:%s][err:%v]", config.ID, config.FilePath, err)
 			}
@@ -70,7 +71,7 @@ func UpdateStrategiesLoop() {
 
 		//更新counter
 		GlobalCount.UpdateByStrategy(strategyMap)
-		time.Sleep(time.Second * time.Duration(g.Conf().Strategy.UpdateDuration))
+		time.Sleep(time.Second * time.Duration(g.Config().Strategy.UpdateDuration))
 	}
 }
 
@@ -108,7 +109,10 @@ func createJob(config *ConfigInfo, cache chan string, st *scheme.Strategy) error
 	if err != nil {
 		return err
 	}
+	pat, _ := utils.GetPatAndTimeFormat(st.TimeFormat)
+	r.LogSplit = pat
 	dlog.Infof("Add Reader : [%s]", config.FilePath)
+
 	//启动worker
 	w := NewWorkerGroup(config.FilePath, cache, st)
 	JobManager[config.FilePath] = &Job{

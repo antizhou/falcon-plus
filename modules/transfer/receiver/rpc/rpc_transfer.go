@@ -23,6 +23,8 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/transfer/sender"
 	"strconv"
 	"time"
+	"encoding/json"
+	"bytes"
 )
 
 type Transfer int
@@ -49,6 +51,42 @@ func (this *Transfer) Ping(req cmodel.NullRpcRequest, resp *cmodel.SimpleRpcResp
 
 func (t *Transfer) Update(args []*cmodel.MetricValue, reply *cmodel.TransferResponse) error {
 	return RecvMetricValues(args, reply, "rpc")
+}
+
+type Req struct {
+	Data []LogPoint
+}
+type LogPoint struct {
+	App     string
+	Content string
+	Time    int64
+}
+
+func (l LogPoint) String() string {
+	bs, err := json.Marshal(l)
+	if err != nil {
+		return ""
+	}
+	return string(bs)
+}
+
+func (t *Transfer) SaveLog2ES(args Req, reply *string) error {
+	var buffer bytes.Buffer
+	for _, v := range args.Data {
+		s := v.String()
+		if s == "" {
+			continue
+		}
+		buffer.WriteString(s)
+		buffer.WriteString("\n")
+	}
+	if buffer.Len() == 0 {
+		*reply = "no data of this request"
+		return nil
+	}
+	sender.EsConnPoolHelper.SaveLog(buffer.Bytes())
+	*reply = "success"
+	return nil
 }
 
 // process new metric values

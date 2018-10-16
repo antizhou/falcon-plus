@@ -3,7 +3,7 @@ package strategy
 import (
 	"fmt"
 
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/g"
+	"github.com/open-falcon/falcon-plus/modules/agent/g"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/scheme"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/utils"
 )
@@ -22,7 +22,7 @@ func UpdateGlobalStrategy(sts []*scheme.Strategy) error {
 	tmpStrategyMap := make(map[int64]*scheme.Strategy, 0)
 	for _, st := range sts {
 		if st.Degree == 0 {
-			st.Degree = int64(g.Conf().Strategy.DefaultDegree)
+			st.Degree = int64(g.Config().Strategy.DefaultDegree)
 		}
 		tmpStrategyMap[st.ID] = st
 	}

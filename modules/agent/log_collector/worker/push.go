@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/dlog"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/g"
+	"github.com/open-falcon/falcon-plus/modules/agent/g"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/scheme"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/utils"
 
@@ -82,8 +82,8 @@ func PosterLoop() {
 func PusherLoop() {
 	dlog.Info("PushLoop Start")
 	for {
-		strategiesIds := GlobalCount.GetIDs()
-		for _, id := range strategiesIds {
+		strategyIds := GlobalCount.GetStrategyIDs()
+		for _, id := range strategyIds {
 			stCounter, err := GlobalCount.GetStrategyCounterByID(id)
 			step := stCounter.Strategy.Interval
 
@@ -95,7 +95,7 @@ func PusherLoop() {
 			timestamps := stCounter.GetTimestamps()
 			for _, tms := range timestamps {
 				if tmsNeedPush(tms, filePath, step) {
-					pointsCount, err := stCounter.GetByTms(tms)
+					pointsCount, err := stCounter.GetPointsCounter(tms)
 					if err == nil {
 						ToPushQueue(stCounter.Strategy, tms, pointsCount.TagstringMap)
 					} else {
@@ -105,7 +105,7 @@ func PusherLoop() {
 				}
 			}
 		}
-		time.Sleep(time.Second * time.Duration(g.Conf().Worker.PushInterval))
+		time.Sleep(time.Second * time.Duration(g.Config().Worker.PushInterval))
 	}
 }
 
@@ -196,7 +196,7 @@ func postToFalconAgent(paramPoints []*FalconPoint) {
 
 	dlog.Infof("to falcon agent: %s", string(param))
 
-	url := fmt.Sprintf(g.Conf().Worker.PushURL)
+	url := fmt.Sprintf(g.Config().Worker.PushURL)
 
 	resp, body, errs := gorequest.New().Post(url).
 		Timeout(10 * time.Second).

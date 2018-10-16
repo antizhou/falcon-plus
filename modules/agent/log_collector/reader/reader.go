@@ -7,6 +7,8 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/proc/metric"
 
 	"github.com/hpcloud/tail"
+	"regexp"
+	"container/list"
 )
 
 // Reader to read file
@@ -16,6 +18,7 @@ type Reader struct {
 	Stream      chan string
 	CurrentPath string //当前的路径
 	Close       chan struct{}
+	LogSplit    string
 }
 
 // NewReader to create a reader
@@ -76,10 +79,51 @@ func (r *Reader) StartRead() {
 		}
 	}()
 
+	isLogSplit := false
+	reg := r.LogSplit
+	rr, err := regexp.Compile(reg)
+	if err == nil {
+		isLogSplit = true
+	}
+
+	lines := list.New()
 	for line := range r.t.Lines {
+		text := line.Text
+		if len(text) == 0 {
+			continue
+		}
+
+		log := ""
+		if isLogSplit {
+			if rr.Find([]byte(text)) == nil {
+				lines.PushBack(text)
+
+				// avoid log in mem to much
+				if lines.Len() > 500 {
+					lines.Init()
+				}
+				continue
+			}
+
+			if lines.Len() == 0 {
+				// wait to collector whole log
+				lines.PushBack(text)
+				continue
+			}
+
+			for e := lines.Front(); e != nil; e = e.Next() {
+				log += e.Value.(string)
+			}
+
+			lines.Init()
+			lines.PushBack(line.Text)
+		} else {
+			log = line.Text
+		}
+
 		readCnt = readCnt + 1
 		select {
-		case r.Stream <- line.Text:
+		case r.Stream <- log:
 		default:
 			dropCnt = dropCnt + 1
 			//TODO 数据丢失处理，从现时间戳开始截断上报5周期

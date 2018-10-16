@@ -10,11 +10,14 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/strategy"
 
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/dlog"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/g"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/proc/metric"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/sample_log"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/scheme"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/utils"
+	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/transfer"
+	agent "github.com/open-falcon/falcon-plus/modules/agent/g"
+	"log"
+	"strings"
 )
 
 // Worker to analysis
@@ -73,14 +76,14 @@ func (wg WorkerGroup) GetOldestTms() (tms int64, allFree bool) {
 func NewWorkerGroup(filePath string, stream chan string, st *scheme.Strategy) *WorkerGroup {
 
 	wg := &WorkerGroup{
-		WorkerNum: g.Conf().Worker.WorkerNum,
+		WorkerNum: agent.Config().Worker.WorkerNum,
 		Workers:   make([]*Worker, 0),
 	}
 
-	dlog.Infof("new worker group, [file:%s][worker_num:%d]", filePath, g.Conf().Worker.WorkerNum)
+	dlog.Infof("new worker group, [file:%s][worker_num:%d]", filePath, agent.Config().Worker.WorkerNum)
 
 	for i := 0; i < wg.WorkerNum; i++ {
-		mark := fmt.Sprintf("[worker][file:%s][num:%d][id:%d]", filePath, g.Conf().Worker.WorkerNum, i)
+		mark := fmt.Sprintf("[worker][file:%s][num:%d][id:%d]", filePath, agent.Config().Worker.WorkerNum, i)
 		w := Worker{}
 		w.Close = make(chan struct{})
 		// w.ParentGroup = wg
@@ -180,13 +183,23 @@ func (w *Worker) analysis(line string) {
 			analyspoint, err := w.producer(line, strategy)
 
 			if err != nil {
-				log := fmt.Sprintf("%s[producer error][sid:%d] : %v", w.Mark, strategy.ID, err)
-				sample_log.Error(log)
+				l := fmt.Sprintf("%s[producer error][sid:%d] : %v", w.Mark, strategy.ID, err)
+				log.Println(l)
+				sample_log.Error(l)
 				continue
 			} else {
 				if analyspoint != nil {
 					metric.MetricAnalysisSucc(w.FilePath, 1)
 					toCounter(analyspoint, w.Mark)
+
+					go func(content string, time int64) {
+						logPoint := transfer.LogPoint{
+							App:     agent.App,
+							Content: content,
+							Time:    time,
+						}
+						transfer.Cache <- logPoint
+					}(line, analyspoint.Tms)
 				}
 			}
 		}
@@ -208,6 +221,10 @@ func (w *Worker) producer(line string, strategy *scheme.Strategy) (*AnalysPoint,
 	t := reg.FindString(line)
 	if len(t) <= 0 {
 		return nil, fmt.Errorf("cannot get timestamp:[sname:%s][sid:%d][timeFormat:%v]", strategy.Name, strategy.ID, timeFormat)
+	}
+
+	if strings.Contains(t, ",") {
+		t = strings.Replace(t, ",", ".", -1)
 	}
 
 	// 如果没有年，需添加当前年
@@ -294,7 +311,7 @@ func (w *Worker) producer(line string, strategy *scheme.Strategy) (*AnalysPoint,
 
 //将解析数据给counter
 func toCounter(analyspoint *AnalysPoint, mark string) {
-	if err := PushToCount(analyspoint); err != nil {
+	if err := PushToCounter(analyspoint); err != nil {
 		dlog.Errorf("%s push to counter error: %v", mark, err)
 	}
 }

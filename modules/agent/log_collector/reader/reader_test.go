@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 	"time"
+	"regexp"
 )
 
 //当新文件出现时，是否自动读取
@@ -53,4 +54,15 @@ func util(isnext bool) {
 	for line := range stream {
 		fmt.Println(line)
 	}
+}
+
+func TestRegex(t *testing.T) {
+	s := "2018-10-15 09wewe:21:22,769 ERROR controller.AlarmController - send alarm error:"
+	reg := `(2[0-9]{3})-(0[1-9]|1[012])-([012][0-9]|3[01])\s([01][0-9]|2[0-4])(:[012345][0-9]){2},\d+`
+	rr, _ := regexp.Compile(reg)
+	b := rr.Find([]byte(s))
+	if b == nil {
+		fmt.Println("sadfsadfasdf")
+	}
+	fmt.Println(string(b))
 }

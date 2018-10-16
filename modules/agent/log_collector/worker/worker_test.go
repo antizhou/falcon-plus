@@ -17,9 +17,21 @@ func TestWorkerStart(t *testing.T) {
 			time.Sleep(time.Second * 1)
 		}
 	}()
-	wg := NewWorkerGroup("memeda", c)
+	wg := NewWorkerGroup("memeda", c, nil)
 	wg.Start()
 	time.Sleep(10 * time.Second)
 	wg.Stop()
 	time.Sleep(1 * time.Second)
+}
+
+func TestWorkerStartsdd(t *testing.T) {
+	//fmt.Println(time.Now().Format("2006-01-02 15:04:05.999"))
+	//fmt.Println(os.O_APPEND|os.O_CREATE|os.O_WRONLY)
+	var pat = ""
+	pat = `([012][0-9]|3[01])-[JFMASOND][a-z]{2}-(2[0-9]{3})\s([01][0-9]|2[0-4])(:[012345][0-9]){2}`
+	fmt.Println(pat)
+
+	pat = "([012][0-9]|3[01])-[JFMASOND][a-z]{2}-(2[0-9]{3})\\s([01][0-9]|2[0-4])(:[012345][0-9]){2}"
+	fmt.Println(pat)
+
 }

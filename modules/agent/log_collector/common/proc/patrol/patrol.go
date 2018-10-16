@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/dlog"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/g"
+	"github.com/open-falcon/falcon-plus/modules/agent/g"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/proc/metric"
 )
 
@@ -17,7 +17,7 @@ func PatrolLoop() {
 
 			nowMemUsedMB := getMemUsedMB()
 			metric.MetricMem(int64(nowMemUsedMB))
-			rate := (nowMemUsedMB * 100) / uint64(g.Conf().MaxMemMB)
+			rate := (nowMemUsedMB * 100) / uint64(g.Config().MaxMemMB)
 
 			dlog.Infof("agent mem used : %dMB, percent : %d%%", nowMemUsedMB, rate)
 			//若超50%限制，打印warning
@@ -27,7 +27,7 @@ func PatrolLoop() {
 			}
 			if rate > 100 {
 				// 堆内存已超过限制，退出进程
-				dlog.Errorf("heap memory size over limit. quit process.[used:%dMB][limit:%dMB][rate:%d]", nowMemUsedMB, g.Conf().MaxMemMB, rate)
+				dlog.Errorf("heap memory size over limit. quit process.[used:%dMB][limit:%dMB][rate:%d]", nowMemUsedMB, g.Config().MaxMemMB, rate)
 				os.Exit(1)
 			}
 		}

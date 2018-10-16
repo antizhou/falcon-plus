@@ -79,6 +79,24 @@ func NewEsConnPoolHelper(address string, maxConns, maxIdle, connTimeout, callTim
 }
 
 func (t *EsConnPoolHelper) Send(data []byte) (err error) {
+	index := "monitor-metric-" + time.Now().Format("20060102")
+	eType := "m"
+	return t.Save(index, eType, data)
+}
+
+func (t *EsConnPoolHelper) SaveLog(data []byte) (err error) {
+	index := "monitor-log-" + time.Now().Format("20060102")
+	eType := "type"
+	return t.Save(index, eType, data)
+}
+
+func (t *EsConnPoolHelper) Destroy() {
+	if t.p != nil {
+		t.p.Destroy()
+	}
+}
+
+func (t *EsConnPoolHelper) Save(esIndex string, esType string, data []byte) (err error) {
 	conn, err := t.p.Fetch()
 	if err != nil {
 		return fmt.Errorf("get connection fail: err %v. proc: %s", err, t.p.Proc())
@@ -90,11 +108,8 @@ func (t *EsConnPoolHelper) Send(data []byte) (err error) {
 	go func() {
 		bulkRequest := cli.Bulk()
 
-		index := "monitor-metric-" + time.Now().Format("20060102")
-		eType := "m"
-
 		for _, v := range strings.Split(string(data), "\n") {
-			indexReq := elastic.NewBulkIndexRequest().Index(index).Type(eType).Doc(v)
+			indexReq := elastic.NewBulkIndexRequest().Index(esIndex).Type(esType).Doc(v)
 			bulkRequest = bulkRequest.Add(indexReq)
 		}
 
@@ -117,11 +132,5 @@ func (t *EsConnPoolHelper) Send(data []byte) (err error) {
 			t.p.Release(conn)
 		}
 		return err
-	}
-}
-
-func (t *EsConnPoolHelper) Destroy() {
-	if t.p != nil {
-		t.p.Destroy()
 	}
 }
