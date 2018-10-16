@@ -44,7 +44,7 @@ fmt-check:
 	fi;
 
 $(CMD):
-	CGO_ENABLED=0  GOOS=linux GOARCH=64 go build -o bin/$@/falcon-$@ ./modules/$@
+	CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build -o bin/$@/falcon-$@ ./modules/$@
 
 .PHONY: $(TARGET)
 $(TARGET): $(GOFILES)
