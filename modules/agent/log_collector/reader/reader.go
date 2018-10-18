@@ -1,14 +1,13 @@
 package reader
 
 import (
-	"os"
 	"time"
 
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/proc/metric"
 
 	"github.com/hpcloud/tail"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector"
 	"regexp"
-	"container/list"
 )
 
 // Reader to read file
@@ -18,41 +17,40 @@ type Reader struct {
 	Stream      chan string
 	CurrentPath string //当前的路径
 	Close       chan struct{}
-	LogSplit    string
 }
 
 // NewReader to create a reader
-func NewReader(filepath string, stream chan string) (*Reader, error) {
+func NewReader(filepath string, stream chan string, prefix string) (*Reader, error) {
 	r := &Reader{
 		FilePath: filepath,
 		Stream:   stream,
 		Close:    make(chan struct{}),
 	}
+
+	reg, err := regexp.Compile(prefix)
+	if err != nil {
+		return nil, err
+	}
+
 	path := GetCurrentPath(filepath)
-	err := r.openFile(os.SEEK_END, path) //默认打开seek_end
+	id := generateId(path)
+
+	go func() {
+		for {
+			path = GetCurrentPath(filepath)
+			collector.Read(id, path, *reg, stream)
+		}
+	}()
 
 	return r, err
 }
 
-func (r *Reader) openFile(whence int, filepath string) error {
-	seekinfo := &tail.SeekInfo{
-		Offset: 0,
-		Whence: whence,
+func generateId(str string) uint64 {
+	var id = uint64(0)
+	for _, v := range []byte(str) {
+		id += uint64(v)
 	}
-	config := tail.Config{
-		Location: seekinfo,
-		ReOpen:   true,
-		Poll:     true,
-		Follow:   true,
-	}
-
-	t, err := tail.TailFile(filepath, config)
-	if err != nil {
-		return err
-	}
-	r.t = t
-	r.CurrentPath = filepath
-	return nil
+	return id
 }
 
 // StartRead to start to read
@@ -60,12 +58,11 @@ func (r *Reader) StartRead() {
 	var readCnt, readSwp int64
 	var dropCnt, dropSwp int64
 
-	analysClose := make(chan int, 0)
 	go func() {
 		for {
 			// 十秒钟统计一次
 			select {
-			case <-analysClose:
+			case <-r.Close:
 				return
 			case <-time.After(time.Second * 10):
 			}
@@ -78,62 +75,6 @@ func (r *Reader) StartRead() {
 			dropSwp = b
 		}
 	}()
-
-	isLogSplit := false
-	reg := r.LogSplit
-	rr, err := regexp.Compile(reg)
-	if err == nil {
-		isLogSplit = true
-	}
-
-	lines := list.New()
-	for line := range r.t.Lines {
-		text := line.Text
-		if len(text) == 0 {
-			continue
-		}
-
-		log := ""
-		if isLogSplit {
-			if rr.Find([]byte(text)) == nil {
-				lines.PushBack(text)
-
-				// avoid log in mem to much
-				if lines.Len() > 500 {
-					lines.Init()
-				}
-				continue
-			}
-
-			if lines.Len() == 0 {
-				// wait to collector whole log
-				lines.PushBack(text)
-				continue
-			}
-
-			for e := lines.Front(); e != nil; e = e.Next() {
-				log += e.Value.(string)
-			}
-
-			lines.Init()
-			lines.PushBack(line.Text)
-		} else {
-			log = line.Text
-		}
-
-		readCnt = readCnt + 1
-		select {
-		case r.Stream <- log:
-		default:
-			dropCnt = dropCnt + 1
-			//TODO 数据丢失处理，从现时间戳开始截断上报5周期
-			// 是否真的要做？
-			// 首先，5 周期也是拍脑袋的，只能拍脑袋丢数据，并不能保证准确性
-			// 其次，是当前时间推五周期，并不知道日志是什么时候，这个地方有待斟酌
-			// 结论，暂且不做，后人注意
-		}
-	}
-	analysClose <- 0
 }
 
 // StopRead to stop a read instance
@@ -164,14 +105,4 @@ func (r *Reader) Start() {
 }
 
 func (r *Reader) check() {
-	nextpath := GetNowPath(r.FilePath)
-	if r.CurrentPath != nextpath {
-		if _, err := os.Stat(nextpath); err != nil {
-			return
-		}
-		r.t.StopAtEOF()
-		if err := r.openFile(os.SEEK_SET, nextpath); err == nil { //从文件开始打开
-			go r.StartRead()
-		}
-	}
 }

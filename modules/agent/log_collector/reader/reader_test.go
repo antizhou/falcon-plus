@@ -21,7 +21,7 @@ func TestStartAndStop(t *testing.T) {
 
 func util(isnext bool) {
 	stream := make(chan string, 100)
-	rj, err := NewReader("/Users/anbaoyong/Project/test/aby.${%Y-%m-%d-%H}", stream)
+	rj, err := NewReader("/Users/anbaoyong/Project/test/aby.${%Y-%m-%d-%H}", stream, "")
 	if err != nil {
 		return
 	}

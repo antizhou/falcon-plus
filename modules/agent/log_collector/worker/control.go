@@ -104,13 +104,13 @@ func createJob(config *ConfigInfo, cache chan string, st *scheme.Strategy) error
 	}
 
 	ManagerConfig[config.ID] = config
+
 	//启动reader
-	r, err := reader.NewReader(config.FilePath, cache)
+	pat, _ := utils.GetPatAndTimeFormat(st.TimeFormat)
+	r, err := reader.NewReader(config.FilePath, cache, pat)
 	if err != nil {
 		return err
 	}
-	pat, _ := utils.GetPatAndTimeFormat(st.TimeFormat)
-	r.LogSplit = pat
 	dlog.Infof("Add Reader : [%s]", config.FilePath)
 
 	//启动worker
