@@ -59,7 +59,7 @@ type Req struct {
 type LogPoint struct {
 	App     string
 	Content string
-	Time    int64
+	Time    time.Time
 }
 
 func (l LogPoint) String() string {

@@ -40,7 +40,7 @@ func init() {
 type LogPoint struct {
 	App     string
 	Content string
-	Time    int64
+	Time    time.Time
 }
 
 type Req struct {

@@ -192,11 +192,11 @@ func (w *Worker) analysis(line string) {
 					metric.MetricAnalysisSucc(w.FilePath, 1)
 					toCounter(analyspoint, w.Mark)
 
-					go func(content string, time int64) {
+					go func(content string, t int64) {
 						logPoint := transfer.LogPoint{
 							App:     agent.App,
 							Content: content,
-							Time:    time,
+							Time:    time.Unix(t, 0),
 						}
 						transfer.Cache <- logPoint
 					}(line, analyspoint.Tms)
