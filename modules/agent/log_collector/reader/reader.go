@@ -39,6 +39,7 @@ func NewReader(filepath string, stream chan string, prefix string) (*Reader, err
 		for {
 			path = GetCurrentPath(filepath)
 			collector.Read(id, path, *reg, stream)
+			time.Sleep(60 * time.Second)
 		}
 	}()
 
