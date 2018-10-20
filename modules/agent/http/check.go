@@ -3,9 +3,9 @@ package http
 import (
 	"regexp"
 
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/scheme"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/utils"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/strategy"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/scheme"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/utils"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/strategy"
 )
 
 type MatchBody struct {

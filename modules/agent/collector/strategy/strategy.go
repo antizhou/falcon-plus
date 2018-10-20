@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/open-falcon/falcon-plus/modules/agent/g"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/scheme"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/utils"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/scheme"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/utils"
 )
 
 // 后续开发者切记 : 没有锁，不要修改globalStrategy，更新的时候直接替换，否则会panic

@@ -9,10 +9,10 @@ import (
 
 	dlog "github.com/open-falcon/falcon-plus/logger"
 	"github.com/open-falcon/falcon-plus/modules/agent/g"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/scheme"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/utils"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/scheme"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/utils"
 
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/proc/metric"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/proc/metric"
 
 	"github.com/parnurzeal/gorequest"
 )

@@ -1,4 +1,4 @@
-package collector
+package reader
 
 var (
 	// Directory is the directory to store persistence file

@@ -23,7 +23,7 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/agent/funcs"
 	"github.com/open-falcon/falcon-plus/modules/agent/g"
 	"github.com/open-falcon/falcon-plus/modules/agent/http"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector"
 )
 
 func main() {
@@ -57,7 +57,7 @@ func main() {
 	g.InitRpcClients()
 	g.InitApp()
 
-	log_collector.Start()
+	collector.Start()
 
 	funcs.BuildMappers()
 

@@ -2,8 +2,8 @@ package http
 
 import (
 	"net/http"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/strategy"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/worker"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/strategy"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/worker"
 )
 
 func configLogCollector() {

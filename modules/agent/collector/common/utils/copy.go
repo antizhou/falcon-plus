@@ -1,6 +1,6 @@
 package utils
 
-import "github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/scheme"
+import "github.com/open-falcon/falcon-plus/modules/agent/collector/common/scheme"
 
 func DeepCopyStrategy(ori *scheme.Strategy) *scheme.Strategy {
 	ret := &scheme.Strategy{

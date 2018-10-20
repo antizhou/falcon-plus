@@ -2,12 +2,10 @@ package reader
 
 import (
 	"time"
-
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/proc/metric"
-
-	"github.com/hpcloud/tail"
-	"github.com/open-falcon/falcon-plus/modules/agent/collector"
 	"regexp"
+
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/proc/metric"
+	"github.com/hpcloud/tail"
 )
 
 // Reader to read file
@@ -38,7 +36,7 @@ func NewReader(filepath string, stream chan string, prefix string) (*Reader, err
 	go func() {
 		for {
 			path = GetCurrentPath(filepath)
-			collector.Read(id, path, *reg, stream)
+			Read(id, path, *reg, stream)
 			time.Sleep(60 * time.Second)
 		}
 	}()

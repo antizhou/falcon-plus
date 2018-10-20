@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	dlog "github.com/open-falcon/falcon-plus/logger"
 
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/g"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/scheme"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/g"
+	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/scheme"
 )
 
 func getFileStrategy() ([]*scheme.Strategy, error) {
