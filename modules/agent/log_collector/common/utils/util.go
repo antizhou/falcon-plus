@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/dlog"
+	dlog "github.com/open-falcon/falcon-plus/logger"
 )
 
 func LocalHostname() (string, error) {

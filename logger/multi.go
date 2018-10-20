@@ -1,4 +1,4 @@
-package dlog
+package logger
 
 type multiBackend struct {
 	bes []Backend

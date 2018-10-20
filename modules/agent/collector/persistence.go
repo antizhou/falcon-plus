@@ -5,8 +5,7 @@ import (
 	"sync"
 	"time"
 	"syscall"
-
-	"github.com/cihub/seelog"
+	log "github.com/open-falcon/falcon-plus/logger"
 )
 
 const (
@@ -34,7 +33,7 @@ func NewOffset(id uint64, filePath string) (r *PersistenceRow) {
 
 	var stat syscall.Stat_t
 	if err := syscall.Stat(filePath, &stat); err != nil {
-		seelog.Errorf("stat file error", err)
+		log.Errorf("stat file error", err)
 		return
 	}
 
@@ -142,7 +141,7 @@ func savePersistence() error {
 	err = Save(PersistenceFilename, data)
 
 	if err != nil {
-		seelog.Error("log collector can not save offset, err: ", err)
+		log.Error("log collector can not save offset, err: ", err)
 	}
 
 	return err

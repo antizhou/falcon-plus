@@ -1,6 +1,6 @@
 // +build windows plan9 netbsd
 
-package dlog
+package logger
 
 import (
 	"fmt"

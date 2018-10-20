@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/dlog"
+	dlog "github.com/open-falcon/falcon-plus/logger"
 )
 
 type MetricTags struct {

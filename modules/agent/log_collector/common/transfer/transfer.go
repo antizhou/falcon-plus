@@ -4,7 +4,7 @@ import (
 	"time"
 	"math/rand"
 	"github.com/open-falcon/falcon-plus/modules/agent/g"
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/dlog"
+	dlog "github.com/open-falcon/falcon-plus/logger"
 	"fmt"
 	"net/rpc/jsonrpc"
 	"log"

@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/dlog"
+	dlog "github.com/open-falcon/falcon-plus/logger"
 )
 
 var (

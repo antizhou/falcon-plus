@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/dlog"
+	dlog "github.com/open-falcon/falcon-plus/logger"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/scheme"
 	"github.com/open-falcon/falcon-plus/modules/agent/log_collector/common/utils"
 

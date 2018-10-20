@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/cihub/seelog"
+	log "github.com/open-falcon/falcon-plus/logger"
 )
 
 func Read(id uint64, filePath string, prefix regexp.Regexp, stream chan string) error {
@@ -17,7 +17,7 @@ func Read(id uint64, filePath string, prefix regexp.Regexp, stream chan string) 
 
 	stat, err := file.Stat()
 	if err != nil {
-		seelog.Errorf("[agent.collector.log.Read] file stat error: ", err)
+		log.Errorf("[agent.collector.log.Read] file stat error: ", err)
 		return err
 	}
 
@@ -34,7 +34,7 @@ func Read(id uint64, filePath string, prefix regexp.Regexp, stream chan string) 
 		return nil
 	}
 
-	seelog.Infof("[agent.collector.log.Read] the file %s has %d bytes left", r.Path, left)
+	log.Infof("[agent.collector.log.Read] the file %s has %d bytes left", r.Path, left)
 
 	for {
 		if r.Offset >= size {
@@ -47,7 +47,7 @@ func Read(id uint64, filePath string, prefix regexp.Regexp, stream chan string) 
 			break
 		}
 		if err != nil {
-			seelog.Error("can not read data on ", r.Path, " err: ", err)
+			log.Error("can not read data on ", r.Path, " err: ", err)
 			time.Sleep(10 * time.Second)
 			break
 		}
@@ -69,18 +69,18 @@ func ReadLines(r *PersistenceRow, file *os.File, size int64, prefix regexp.Regex
 		currentLen = left
 	}
 
-	seelog.Infof("[agent.collector.log.ReadLines] collector reading %d bytes on %s", currentLen, r.Path)
+	log.Infof("[agent.collector.log.ReadLines] collector reading %d bytes on %s", currentLen, r.Path)
 
 	file.Seek(r.Offset, os.SEEK_SET)
 	_, err := file.Read(buf[:currentLen])
 
 	if err != nil {
-		seelog.Errorf("[agent.collector.log.ReadLines] collector can not read file %s, err: %s", r.Path, err.Error())
+		log.Errorf("[agent.collector.log.ReadLines] collector can not read file %s, err: %s", r.Path, err.Error())
 		return currentOffset, err
 	}
 
 	if err != nil {
-		seelog.Error("[agent.collector.log.ReadLines] can not parse prefix regexp, err: ", err)
+		log.Error("[agent.collector.log.ReadLines] can not parse prefix regexp, err: ", err)
 		return currentOffset, err
 	}
 

@@ -8,7 +8,6 @@ import (
 
 func Start() {
 	g.InitAll()
-	defer g.CloseLog()
 
 	go metric.MetricLoop(60)
 	go worker.UpdateStrategiesLoop()
