@@ -217,7 +217,7 @@ func alignTs(ts int64, period int64) int64 {
 
 func Push2EsSendQueue(items []*cmodel.MetaData) {
 	for _, item := range items {
-		tsdbItem := convert2EsdbItem(item)
+		tsdbItem := convert2EsItem(item)
 		isSuccess := EsQueue.PushFront(tsdbItem)
 
 		if !isSuccess {
@@ -227,7 +227,7 @@ func Push2EsSendQueue(items []*cmodel.MetaData) {
 }
 
 // 转化为es格式
-func convert2EsdbItem(d *cmodel.MetaData) *cmodel.EsItem {
+func convert2EsItem(d *cmodel.MetaData) *cmodel.EsItem {
 	t := cmodel.EsItem{}
 
 	var tags = ""
