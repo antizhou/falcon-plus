@@ -7,34 +7,33 @@ import (
 
 	dlog "github.com/open-falcon/falcon-plus/logger"
 	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/scheme"
-	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/utils"
-
 	"github.com/parnurzeal/gorequest"
 )
 
-func getHTTPStrategy(addr, uri string, timeout int) ([]*scheme.Strategy, error) {
-	hostname, err := utils.LocalHostname()
-	if err != nil {
-		return nil, err
+func getHTTPStrategy(addrs []string, uri string, timeoutInSec int) (strategies []*scheme.Strategy, e error) {
+	for _, addr := range addrs {
+
+		url := fmt.Sprintf("%s%s", addr, uri)
+
+		dlog.Infof("URL in get strategy : [%s]", url)
+
+		body, err := getRequest(url, timeoutInSec)
+
+		if err != nil {
+			strategies = nil
+			e = err
+			continue
+		}
+
+		var strategyResp []*scheme.Strategy
+		err = json.Unmarshal([]byte(body), &strategyResp)
+		if err != nil {
+			dlog.Errorf("json decode error when update strategy : [%v]", err)
+			return nil, err
+		}
+		return strategyResp, nil
 	}
-	urlTemp := fmt.Sprintf("%s%s", addr, uri)
-
-	url := fmt.Sprintf(urlTemp, hostname)
-	dlog.Infof("URL in get strategy : [%s]", url)
-
-	body, err := getRequest(url, timeout)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var strategyResp []*scheme.Strategy
-	err = json.Unmarshal([]byte(body), &strategyResp)
-	if err != nil {
-		dlog.Errorf("json decode error when update strategy : [%v]", err)
-		return nil, err
-	}
-	return strategyResp, nil
+	return
 }
 
 func getRequest(url string, timeout int) (string, error) {

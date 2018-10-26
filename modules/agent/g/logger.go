@@ -14,18 +14,22 @@
 
 package g
 
-import log "github.com/Sirupsen/logrus"
+import (
+	log "github.com/open-falcon/falcon-plus/logger"
+)
 
-func InitLog(level string) (err error) {
-	switch level {
-	case "info":
-		log.SetLevel(log.InfoLevel)
-	case "debug":
-		log.SetLevel(log.DebugLevel)
-	case "warn":
-		log.SetLevel(log.WarnLevel)
-	default:
-		log.Fatal("log conf only allow [info, debug, warn], please check your confguire")
+func InitLog() (err error) {
+	backend, err := log.NewFileBackend(Config().Log.LogPath)
+	if err != nil {
+		return err
+	} else {
+		log.SetLogging(Config().Log.LogLevel, backend)
+		// 日志rotate设置
+		backend.Rotate(Config().Log.LogRotateNum, uint64(1024*1024*Config().Log.LogRotateSize))
+		return nil
 	}
-	return
+}
+
+func CloseLog() {
+	log.Close()
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/agent/collector/common/utils"
 
 	"time"
+	"github.com/open-falcon/falcon-plus/modules/agent/g"
 )
 
 // PatternExcludePartition to separate pattern and exclude
@@ -18,7 +19,23 @@ const PatternExcludePartition = "```EXCLUDE```"
 func Update() error {
 	markTms := time.Now().Unix()
 	dlog.Infof("[%d]Update Strategy start", markTms)
-	strategys, err := getFileStrategy()
+
+	var strategys []*scheme.Strategy
+	var err error
+
+	if !g.Config().Strategy.UpdateFromHttp {
+		strategys, err = getFileStrategy()
+	} else {
+		uri := "/monitor/v1/collector-configs/" + g.App
+		//uri := "/monitor/v1/collector-configs/monitor-watchdog"
+		strategys, err = getHTTPStrategy(g.Config().Strategy.HttpAddrs, uri, 10)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	//strategys, err := getFileStrategy()
 	parsePattern(strategys)
 	updateRegs(strategys)
 

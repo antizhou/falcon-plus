@@ -46,11 +46,8 @@ func main() {
 
 	g.ParseConfig(*cfg)
 
-	if g.Config().Debug {
-		g.InitLog("debug")
-	} else {
-		g.InitLog("info")
-	}
+	defer g.CloseLog()
+	g.InitLog()
 
 	g.InitRootDir()
 	g.InitLocalIp()

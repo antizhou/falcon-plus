@@ -72,8 +72,10 @@ type httpConfig struct {
 }
 
 type loadConfig struct {
-	UpdateDuration int `json:"update_duration"`
-	DefaultDegree  int `json:"default_degree"`
+	UpdateDuration int      `json:"update_duration"`
+	DefaultDegree  int      `json:"default_degree"`
+	UpdateFromHttp bool     `json:"update_from_http"`
+	HttpAddrs      []string `json:"http_addrs"`
 }
 
 type workerConfig struct {

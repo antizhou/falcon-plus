@@ -2,7 +2,7 @@ package reader
 
 var (
 	// Directory is the directory to store persistence file
-	Directory = "/var/www/logs/agent"
+	Directory = "/var/www/agent"
 )
 
 // Load can load data from persistence directory

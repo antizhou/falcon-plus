@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
-	"log"
+	log "github.com/open-falcon/falcon-plus/logger"
 )
 
 func getApp() string {
@@ -25,7 +25,7 @@ func getApp() string {
 		}
 
 		if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-			log.Println("[g.watchdog.getApp] init app name error")
+			log.Infof("[g.watchdog.getApp] init app name error")
 			continue
 		}
 
@@ -35,7 +35,7 @@ func getApp() string {
 
 	if len(app) == 0 {
 		app = IP()
-		log.Println("[g.watchdog.getApp] init app name error, please check watchdog addr!")
+		log.Infof("[g.watchdog.getApp] init app name error, please check watchdog addr!")
 	}
 	return app
 }

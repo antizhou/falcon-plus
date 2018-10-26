@@ -16,13 +16,11 @@ func InitStrategyFile() {
 	flag.Parse()
 	cfgFile := *strategyCfg
 	if cfgFile == "" {
-		dlog.Fatal("strategy file not specified: use -c $filename")
-		os.Exit(1)
+		dlog.Infof("strategy file not specified: use -c $filename")
 	}
 
 	if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
-		dlog.Fatalf("strategy file specified not found:%s\n", cfgFile)
-		os.Exit(1)
+		dlog.Infof("strategy file specified not found:%s\n", cfgFile)
 	}
 
 	StrategyFile = cfgFile
